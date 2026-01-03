@@ -10,7 +10,6 @@
     "cron": "node src/cron.js",
     "setup-db": "node src/setup-db.js"
   },
-  {
   "engines": {
     "node": ">=20.0.0"
   },
