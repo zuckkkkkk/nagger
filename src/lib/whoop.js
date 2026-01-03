@@ -78,6 +78,7 @@ export async function refreshAccessToken(refreshToken) {
 
 // Helper per chiamate API autenticate
 async function whoopFetch(endpoint, accessToken, options = {}) {
+  console.log(`  [API] Calling: ${endpoint}`);
   const response = await fetch(`${WHOOP_API_BASE}${endpoint}`, {
     ...options,
     headers: {
@@ -87,12 +88,14 @@ async function whoopFetch(endpoint, accessToken, options = {}) {
     }
   });
   
+  const text = await response.text();
+  console.log(`  [API] Response ${response.status}: ${text.substring(0, 500)}`);
+  
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Whoop API error: ${response.status} - ${error}`);
+    throw new Error(`Whoop API error: ${response.status} - ${text}`);
   }
   
-  return response.json();
+  return JSON.parse(text);
 }
 
 // Ottieni profilo utente
@@ -109,6 +112,7 @@ export async function getBodyMeasurements(accessToken) {
 function getStartDate() {
   const start = new Date();
   start.setHours(start.getHours() - 48);
+  console.log('  [DEBUG] Start date:', start.toISOString());
   return start.toISOString();
 }
 
@@ -144,6 +148,7 @@ export async function getTodayRecovery(accessToken) {
   });
   
   const response = await whoopFetch(`/v2/recovery?${params}`, accessToken);
+  console.log('  [RAW] Recovery response:', JSON.stringify(response));
   // Prendi la più recente
   return response.records?.[0] || null;
 }
@@ -156,6 +161,7 @@ export async function getTodaySleep(accessToken) {
   });
   
   const response = await whoopFetch(`/v2/activity/sleep?${params}`, accessToken);
+  console.log('  [RAW] Sleep response:', JSON.stringify(response));
   // Prendi il più recente
   return response.records?.[0] || null;
 }
@@ -168,6 +174,7 @@ export async function getTodayCycle(accessToken) {
   });
   
   const response = await whoopFetch(`/v2/cycle?${params}`, accessToken);
+  console.log('  [RAW] Cycle response:', JSON.stringify(response));
   // Prendi il più recente
   return response.records?.[0] || null;
 }
@@ -182,10 +189,17 @@ export async function getTodayData(accessToken) {
       getTodayCycle(accessToken)
     ]);
     
+    // DEBUG LOG
+    console.log('📊 Whoop raw data:');
+    console.log('  - Workouts:', JSON.stringify(workouts, null, 2));
+    console.log('  - Recovery:', JSON.stringify(recovery, null, 2));
+    console.log('  - Sleep:', JSON.stringify(sleep, null, 2));
+    console.log('  - Cycle:', JSON.stringify(cycle, null, 2));
+    
     const hasWorkout = workouts.records && workouts.records.length > 0;
     const workoutData = hasWorkout ? workouts.records[0] : null;
     
-    return {
+    const result = {
       hasWorkout,
       workout: workoutData ? {
         type: workoutData.sport_name,
@@ -209,6 +223,9 @@ export async function getTodayData(accessToken) {
       } : null,
       strain: cycle?.score?.strain || null
     };
+    
+    console.log('📊 Whoop parsed result:', JSON.stringify(result, null, 2));
+    return result;
   } catch (error) {
     console.error('Error fetching Whoop data:', error);
     throw error;
