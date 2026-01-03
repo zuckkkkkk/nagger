@@ -105,58 +105,70 @@ export async function getBodyMeasurements(accessToken) {
   return whoopFetch('/v2/user/measurement/body', accessToken);
 }
 
+// Helper per ottenere data inizio (48h fa per sicurezza timezone)
+function getStartDate() {
+  const start = new Date();
+  start.setHours(start.getHours() - 48);
+  return start.toISOString();
+}
+
+// Helper per ottenere data di oggi in formato YYYY-MM-DD (timezone Italia)
+function getTodayDateString() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' });
+}
+
 // Ottieni workout di oggi
 export async function getTodayWorkouts(accessToken) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
   const params = new URLSearchParams({
-    start: today.toISOString(),
+    start: getStartDate(),
     limit: '25'
   });
   
-  return whoopFetch(`/v2/activity/workout?${params}`, accessToken);
+  const response = await whoopFetch(`/v2/activity/workout?${params}`, accessToken);
+  
+  // Filtra solo workout di oggi (timezone Italia)
+  const todayStr = getTodayDateString();
+  const todayWorkouts = response.records?.filter(w => {
+    const workoutDate = new Date(w.start).toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' });
+    return workoutDate === todayStr;
+  }) || [];
+  
+  return { records: todayWorkouts };
 }
 
-// Ottieni recovery di oggi
+// Ottieni recovery più recente
 export async function getTodayRecovery(accessToken) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
   const params = new URLSearchParams({
-    start: today.toISOString(),
-    limit: '1'
+    start: getStartDate(),
+    limit: '5'
   });
   
   const response = await whoopFetch(`/v2/recovery?${params}`, accessToken);
+  // Prendi la più recente
   return response.records?.[0] || null;
 }
 
-// Ottieni sleep di oggi
+// Ottieni sleep più recente
 export async function getTodaySleep(accessToken) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
   const params = new URLSearchParams({
-    start: today.toISOString(),
-    limit: '1'
+    start: getStartDate(),
+    limit: '5'
   });
   
   const response = await whoopFetch(`/v2/activity/sleep?${params}`, accessToken);
+  // Prendi il più recente
   return response.records?.[0] || null;
 }
 
-// Ottieni cycle (strain giornaliero) di oggi
+// Ottieni cycle (strain giornaliero) più recente
 export async function getTodayCycle(accessToken) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
   const params = new URLSearchParams({
-    start: today.toISOString(),
-    limit: '1'
+    start: getStartDate(),
+    limit: '5'
   });
   
   const response = await whoopFetch(`/v2/cycle?${params}`, accessToken);
+  // Prendi il più recente
   return response.records?.[0] || null;
 }
 
