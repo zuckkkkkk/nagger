@@ -23,6 +23,9 @@
       --danger: #ef4444;
       --warning: #f59e0b;
       --accent: #3b82f6;
+      --recovery-green: #22c55e;
+      --recovery-yellow: #f59e0b;
+      --recovery-red: #ef4444;
     }
     
     body {
@@ -128,10 +131,140 @@
       font-size: 1.1rem;
     }
     
+    /* Whoop Data Section */
+    .whoop-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
+    
+    .whoop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .whoop-metric {
+      text-align: center;
+      padding: 20px 15px;
+      background: var(--bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    
+    .whoop-metric-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    
+    .whoop-metric-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    
+    .whoop-metric-detail {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    
+    .recovery-green { color: var(--recovery-green); }
+    .recovery-yellow { color: var(--recovery-yellow); }
+    .recovery-red { color: var(--recovery-red); }
+    
+    /* Daily Checklist */
+    .checklist-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
+    
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    
+    .checklist-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .checklist-item:hover {
+      border-color: var(--border);
+    }
+    
+    .checklist-item.completed {
+      border-color: var(--success);
+      background: rgba(34, 197, 94, 0.1);
+    }
+    
+    .checklist-item.failed {
+      border-color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+    
+    .checklist-checkbox {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    
+    .checklist-item.completed .checklist-checkbox {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    
+    .checklist-item.failed .checklist-checkbox {
+      background: var(--danger);
+      border-color: var(--danger);
+    }
+    
+    .checklist-content {
+      flex: 1;
+    }
+    
+    .checklist-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .checklist-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    
+    .checklist-item.completed .checklist-title {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+    
     /* Stats Grid */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 20px;
       margin-bottom: 30px;
     }
@@ -317,32 +450,12 @@
       margin-top: 15px;
     }
     
-    /* Manual Log */
-    .manual-log {
+    /* Action buttons row */
+    .action-buttons {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       margin-top: 20px;
-    }
-    
-    .toggle-btn {
-      padding: 10px 20px;
-      background: var(--border);
-      border: 2px solid transparent;
-      border-radius: 8px;
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .toggle-btn.active {
-      border-color: var(--success);
-      background: rgba(34, 197, 94, 0.2);
-    }
-    
-    .toggle-btn.active.danger-toggle {
-      border-color: var(--danger);
-      background: rgba(239, 68, 68, 0.2);
     }
     
     /* Footer */
@@ -371,6 +484,14 @@
         flex-direction: column;
         gap: 15px;
       }
+      
+      .whoop-metric-value {
+        font-size: 1.8rem;
+      }
+      
+      .whoop-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
     
     /* Loading */
@@ -394,15 +515,25 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    
+    /* Time display */
+    .current-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
       <h1>🏃 WHOOP NAGGER</h1>
-      <div class="status-badge" id="whoop-status">
-        <span class="status-dot disconnected"></span>
-        <span>Caricamento...</span>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <span class="current-time" id="current-time"></span>
+        <div class="status-badge" id="whoop-status">
+          <span class="status-dot disconnected"></span>
+          <span>Caricamento...</span>
+        </div>
       </div>
     </header>
     
@@ -420,6 +551,20 @@
   <script>
     const API_BASE = '/api';
     let dashboardData = null;
+    
+    // Update time
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('current-time').textContent = now.toLocaleString('it-IT', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
     
     // Fetch dashboard data
     async function fetchDashboard() {
@@ -449,6 +594,13 @@
           </div>
         `;
       }
+    }
+    
+    // Get recovery color class
+    function getRecoveryColor(score) {
+      if (score >= 67) return 'recovery-green';
+      if (score >= 34) return 'recovery-yellow';
+      return 'recovery-red';
     }
     
     // Render dashboard
@@ -496,6 +648,49 @@
         `;
       }).join('');
       
+      // Build checklist status
+      const checklistItems = [
+        {
+          id: 'workout',
+          title: '🏋️ Attività Fisica',
+          desc: 'Bici ufficio, cyclette, padel o pesi',
+          completed: today.workout_done,
+          type: 'positive'
+        },
+        {
+          id: 'meals',
+          title: '🥗 Pasti OK',
+          desc: 'Proteine + verdure, no lasagne/cannelloni',
+          completed: today.meals_ok,
+          type: 'positive'
+        },
+        {
+          id: 'alcohol',
+          title: '🍺 No Alcol',
+          desc: 'Max 1 serata a settimana (giovedì o venerdì)',
+          completed: !today.alcohol,
+          failed: today.alcohol,
+          type: 'negative'
+        }
+      ];
+      
+      const checklistHTML = checklistItems.map(item => `
+        <div class="checklist-item ${item.completed ? 'completed' : ''} ${item.failed ? 'failed' : ''}" 
+             onclick="toggleChecklist('${item.id}')">
+          <div class="checklist-checkbox">
+            ${item.completed ? '✓' : (item.failed ? '✗' : '')}
+          </div>
+          <div class="checklist-content">
+            <div class="checklist-title">${item.title}</div>
+            <div class="checklist-desc">${item.desc}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      // Completed count for today
+      const completedCount = checklistItems.filter(i => i.completed && !i.failed).length;
+      const totalChecklist = checklistItems.length;
+      
       document.getElementById('app').innerHTML = `
         <!-- Hero Status -->
         <div class="hero ${today.workout_done ? 'success' : 'danger'}">
@@ -506,33 +701,90 @@
               ? `${today.workout?.type || 'Attività'} registrata • ${today.workout?.strain?.toFixed(1) || '-'} strain`
               : `${today.reminders_sent} reminder inviati oggi`}
           </div>
-          ${today.recovery ? `<div class="hero-subtitle" style="margin-top: 10px;">Recovery: ${today.recovery.score}% • HRV: ${today.recovery.hrv?.toFixed(0)} ms</div>` : ''}
+        </div>
+        
+        <!-- Whoop Data -->
+        ${data.user.whoop_connected ? `
+          <div class="whoop-section">
+            <div class="section-title">📊 Dati Whoop Oggi</div>
+            <div class="whoop-grid">
+              <div class="whoop-metric">
+                <div class="whoop-metric-value ${today.recovery ? getRecoveryColor(today.recovery.score) : ''}">${today.recovery?.score || '-'}%</div>
+                <div class="whoop-metric-label">Recovery</div>
+                ${today.recovery?.hrv ? `<div class="whoop-metric-detail">HRV: ${today.recovery.hrv.toFixed(0)} ms</div>` : ''}
+              </div>
+              
+              <div class="whoop-metric">
+                <div class="whoop-metric-value">${today.strain?.toFixed(1) || '-'}</div>
+                <div class="whoop-metric-label">Strain</div>
+                <div class="whoop-metric-detail">/ 21</div>
+              </div>
+              
+              <div class="whoop-metric">
+                <div class="whoop-metric-value">${today.sleep?.performance?.toFixed(0) || '-'}%</div>
+                <div class="whoop-metric-label">Sleep</div>
+                ${today.sleep?.duration_hours ? `<div class="whoop-metric-detail">${today.sleep.duration_hours}h</div>` : ''}
+              </div>
+              
+              <div class="whoop-metric">
+                <div class="whoop-metric-value">${today.recovery?.resting_hr?.toFixed(0) || '-'}</div>
+                <div class="whoop-metric-label">RHR</div>
+                <div class="whoop-metric-detail">bpm</div>
+              </div>
+              
+              ${today.workout ? `
+                <div class="whoop-metric">
+                  <div class="whoop-metric-value" style="color: var(--success);">${today.workout.calories || '-'}</div>
+                  <div class="whoop-metric-label">Calorie</div>
+                  <div class="whoop-metric-detail">${today.workout.type || 'Workout'}</div>
+                </div>
+                
+                <div class="whoop-metric">
+                  <div class="whoop-metric-value" style="color: var(--success);">${today.workout.strain?.toFixed(1) || '-'}</div>
+                  <div class="whoop-metric-label">Workout Strain</div>
+                  <div class="whoop-metric-detail">${today.workout.duration_minutes || '-'} min</div>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        ` : `
+          <div class="connect-section">
+            <div class="section-title">📱 Connetti Whoop</div>
+            <p>Connetti il tuo Whoop per tracciare automaticamente workout, Recovery, Strain e Sleep</p>
+            <a href="/auth/whoop">Connetti Whoop →</a>
+          </div>
+        `}
+        
+        <!-- Daily Checklist -->
+        <div class="checklist-section">
+          <div class="section-title">✅ Checklist Oggi (${completedCount}/${totalChecklist})</div>
+          ${checklistHTML}
         </div>
         
         <!-- Stats Grid -->
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-label">Streak Attuale</div>
+            <div class="stat-label">🔥 Streak</div>
             <div class="stat-value ${stats.current_streak > 0 ? 'success' : 'danger'}">${stats.current_streak}</div>
             <div class="stat-detail">giorni consecutivi</div>
           </div>
           
           <div class="stat-card">
-            <div class="stat-label">Peso Attuale</div>
+            <div class="stat-label">⚖️ Peso</div>
             <div class="stat-value">${weight.current}</div>
-            <div class="stat-detail">kg • ${weight.lost >= 0 ? '-' : '+'}${Math.abs(weight.lost).toFixed(1)} kg dal 3 gen</div>
+            <div class="stat-detail">${weight.lost >= 0 ? '-' : '+'}${Math.abs(weight.lost).toFixed(1)} kg</div>
           </div>
           
           <div class="stat-card">
-            <div class="stat-label">Mancano</div>
+            <div class="stat-label">🎯 Mancano</div>
             <div class="stat-value warning">${weight.to_go.toFixed(1)}</div>
-            <div class="stat-detail">kg all'obiettivo (85 kg)</div>
+            <div class="stat-detail">kg a 85 kg</div>
           </div>
           
           <div class="stat-card">
-            <div class="stat-label">Workout Totali</div>
+            <div class="stat-label">💪 Workout</div>
             <div class="stat-value">${stats.total_workouts}</div>
-            <div class="stat-detail">dal 3 gennaio</div>
+            <div class="stat-detail">totali</div>
           </div>
         </div>
         
@@ -543,43 +795,14 @@
             <div class="progress-fill" style="width: ${progressPercent}%"></div>
           </div>
           <div class="progress-labels">
-            <span>93 kg (inizio)</span>
-            <span>${progressPercent.toFixed(0)}% completato</span>
-            <span>85 kg (obiettivo)</span>
+            <span>93 kg</span>
+            <span>${progressPercent.toFixed(0)}%</span>
+            <span>85 kg 🎯</span>
           </div>
           
           <div class="weight-input-row">
-            <input type="number" id="weight-input" placeholder="Inserisci peso" step="0.1" min="60" max="150" value="${weight.current}">
-            <button onclick="logWeight()">Salva Peso</button>
-          </div>
-        </div>
-        
-        <!-- Whoop Connection -->
-        ${!data.user.whoop_connected ? `
-          <div class="connect-section">
-            <div class="section-title">📱 Connetti Whoop</div>
-            <p>Connetti il tuo Whoop per tracciare automaticamente i workout</p>
-            <a href="/auth/whoop">Connetti Whoop →</a>
-          </div>
-        ` : ''}
-        
-        <!-- Manual Log -->
-        <div class="activity-section">
-          <div class="section-title">📝 Log Manuale Oggi</div>
-          <div class="manual-log">
-            <button class="toggle-btn ${today.workout_done ? 'active' : ''}" onclick="toggleWorkout()">
-              ${today.workout_done ? '✅' : '⬜'} Workout Fatto
-            </button>
-            <button class="toggle-btn ${today.meals_ok ? 'active' : ''}" onclick="toggleMeals()">
-              ${today.meals_ok ? '✅' : '⬜'} Pasti OK
-            </button>
-            <button class="toggle-btn danger-toggle ${today.alcohol ? 'active' : ''}" onclick="toggleAlcohol()">
-              ${today.alcohol ? '🍺' : '⬜'} Alcol
-            </button>
-          </div>
-          <div style="margin-top: 15px;">
-            <button class="secondary" onclick="syncWhoop()">🔄 Sync Whoop</button>
-            <button class="secondary" onclick="forceCheck()">⚡ Forza Check</button>
+            <input type="number" id="weight-input" placeholder="Peso" step="0.1" min="60" max="150" value="${weight.current}">
+            <button onclick="logWeight()">Salva</button>
           </div>
         </div>
         
@@ -587,8 +810,32 @@
         <div class="activity-section">
           <div class="section-title">📅 Ultimi 7 Giorni</div>
           ${activityRows || '<p style="color: var(--muted)">Nessuna attività registrata</p>'}
+          
+          <div class="action-buttons">
+            <button class="secondary" onclick="syncWhoop()">🔄 Sync Whoop</button>
+            <button class="secondary" onclick="forceCheck()">⚡ Forza Check</button>
+          </div>
         </div>
       `;
+    }
+    
+    // Toggle checklist items
+    async function toggleChecklist(id) {
+      const data = {};
+      
+      switch(id) {
+        case 'workout':
+          data.workout_done = !dashboardData.today.workout_done;
+          break;
+        case 'meals':
+          data.meals_ok = !dashboardData.today.meals_ok;
+          break;
+        case 'alcohol':
+          data.alcohol = !dashboardData.today.alcohol;
+          break;
+      }
+      
+      await updateActivity(data);
     }
     
     // Actions
@@ -610,21 +857,6 @@
       } catch (error) {
         alert('Errore: ' + error.message);
       }
-    }
-    
-    async function toggleWorkout() {
-      const newValue = !dashboardData.today.workout_done;
-      await updateActivity({ workout_done: newValue });
-    }
-    
-    async function toggleMeals() {
-      const newValue = !dashboardData.today.meals_ok;
-      await updateActivity({ meals_ok: newValue });
-    }
-    
-    async function toggleAlcohol() {
-      const newValue = !dashboardData.today.alcohol;
-      await updateActivity({ alcohol: newValue });
     }
     
     async function updateActivity(data) {
@@ -655,7 +887,8 @@
     async function forceCheck() {
       try {
         await fetch(`${API_BASE}/force-check`, { method: 'POST' });
-        alert('Check eseguito! Controlla la console del server.');
+        alert('Check eseguito!');
+        await fetchDashboard();
       } catch (error) {
         alert('Errore: ' + error.message);
       }
@@ -664,8 +897,8 @@
     // Init
     fetchDashboard();
     
-    // Auto-refresh ogni 5 minuti
-    setInterval(fetchDashboard, 5 * 60 * 1000);
+    // Auto-refresh ogni 2 minuti
+    setInterval(fetchDashboard, 2 * 60 * 1000);
     
     // Check URL params
     const params = new URLSearchParams(window.location.search);
